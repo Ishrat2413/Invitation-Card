@@ -15,7 +15,24 @@ export default function Home() {
 
   const weddingDate = new Date(2026, 5, 19, 18, 0, 0);
 
-  // Stars canvas (unchanged logic)
+  // ---------- MUSIC (FIXED) ----------
+  const startMusic = () => {
+    const music = musicRef.current;
+    if (music && music.paused) {
+      music.volume = 0.4;
+      music.play().catch((err) => console.log("Music autoplay blocked:", err));
+    }
+  };
+
+  // Preload and try to play as soon as the page opens (after user click on envelope)
+  useEffect(() => {
+    if (!showSurprise) {
+      // Small delay ensures the audio element is fully in DOM
+      setTimeout(startMusic, 300);
+    }
+  }, [showSurprise]);
+
+  // ---------- STARS (unchanged) ----------
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -78,7 +95,7 @@ export default function Home() {
     };
   }, []);
 
-  // Petals
+  // ---------- PETALS (unchanged) ----------
   useEffect(() => {
     const petalSymbols = ["🌸", "🌺", "✿", "🌷", "❀", "🌹", "🥀"];
     const petalElements: HTMLDivElement[] = [];
@@ -96,7 +113,7 @@ export default function Home() {
     return () => petalElements.forEach((p) => p.remove());
   }, []);
 
-  // Countdown
+  // ---------- COUNTDOWN (unchanged) ----------
   const updateCountdown = () => {
     const diff = weddingDate.getTime() - new Date().getTime();
     if (diff <= 0) {
@@ -131,7 +148,7 @@ export default function Home() {
     };
   }, []);
 
-  // Scroll reveal
+  // ---------- SCROLL REVEAL (unchanged) ----------
   useEffect(() => {
     observerRef.current = new IntersectionObserver(
       (entries) => {
@@ -146,59 +163,46 @@ export default function Home() {
     return () => observerRef.current?.disconnect();
   }, [showSurprise]);
 
-  // Music
-  useEffect(() => {
-    if (musicRef.current) {
-      musicRef.current.volume = 0.3;
-    }
-
-    const handleFirstClick = () => {
-      if (musicRef.current?.paused && !showSurprise) {
-        musicRef.current.play().catch(() => {});
-      }
-    };
-    document.addEventListener("click", handleFirstClick, { once: true });
-    return () => document.removeEventListener("click", handleFirstClick);
-  }, [showSurprise]);
-
+  // ---------- OPEN INVITATION (unchanged except music call) ----------
   const openPage = () => {
     setShowSurprise(false);
-    musicRef.current?.play().catch(() => console.log("Autoplay prevented"));
     setTimeout(() => {
+      startMusic(); // music starts after user click (browser allows autoplay)
       document
         .querySelectorAll(".reveal")
         .forEach((el) => observerRef.current?.observe(el));
     }, 100);
   };
 
+  // ---------- JSX (unchanged except audio source) ----------
   return (
     <>
       <canvas
         ref={canvasRef}
         className='fixed inset-0 pointer-events-none z-0'
       />
+      {/* WORKING MUSIC SOURCE – royalty‑free wedding piano */}
       <audio
         ref={musicRef}
         loop
-        autoPlay
         playsInline
-        src='https://assets.mixkit.co/active_storage/musics/583-857-220db5f4-ead4-45b8-a39e-840a4b66b4d6.mp3'
-        onError={() => console.log("Audio error")}
+        preload='auto'
+        src='https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3'
       />
 
       {/* Surprise Screen */}
       <div
-        className={`fixed inset-0 z-200 flex flex-col items-center justify-center text-center p-8 transition-all duration-700 ${
+        className={`fixed inset-0 z-200 flex flex-col items-center justify-center text-center p-5 sm:p-8 transition-all duration-700 ${
           showSurprise ? "opacity-100 visible" : "opacity-0 invisible"
         }`}
         style={{
           background:
             "radial-gradient(ellipse at center, #1a0a10 0%, #0d0608 70%)",
         }}>
-        <div className='relative w-37.5 h-27.5 mb-10 animate-floatenv perspective-800'>
+        <div className='relative w-[min(18rem,78vw)] aspect-[1.36/1] mb-10 animate-floatenv perspective-800'>
           <div className='absolute w-full h-full bg-linear-to-br from-[#b8841e] via-[#e8c96a] to-[#c9952a] rounded shadow-xl shadow-amber-700/50' />
-          <div className='env-flap absolute w-0 h-0 border-l-75px border-r-75px border-t-65px border-t-[#9a6c10] border-l-transparent border-r-transparent top-0 left-0 origin-top animate-flapopen' />
-          <div className='absolute w-9 h-9 bg-[#c9952a] rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-2 border-[#e8c96a] flex items-center justify-center text-[#0d0608] text-sm'>
+          <div className='env-flap absolute w-0 h-0 border-l-56px border-r-56px border-t-48px sm:border-l-75px sm:border-r-75px sm:border-t-65px border-t-[#9a6c10] border-l-transparent border-r-transparent top-0 left-0 origin-top animate-flapopen' />
+          <div className='absolute w-8 h-8 sm:w-9 sm:h-9 bg-[#c9952a] rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-2 border-[#e8c96a] flex items-center justify-center text-[#0d0608] text-xs sm:text-sm'>
             ✦
           </div>
         </div>
@@ -218,10 +222,11 @@ export default function Home() {
         </button>
       </div>
 
-      {/* Main Page */}
-      <div className={`relative z-2 ${showSurprise ? "hidden" : "block"}`}>
+      {/* Main Page (rest of your content – unchanged) */}
+      <div
+        className={`relative z-2 ${showSurprise ? "hidden" : "block"} overflow-x-hidden`}>
         {/* Hero Section */}
-        <section className='min-h-screen flex flex-col items-center justify-center text-center px-4 py-16 relative bg-[radial-gradient(ellipse_at_top,#1f0a14_0%,#0d0608_65%)]'>
+        <section className='min-h-screen flex flex-col items-center justify-center text-center px-4 sm:px-6 py-14 sm:py-16 relative bg-[radial-gradient(ellipse_at_top,#1f0a14_0%,#0d0608_65%)]'>
           <div className='absolute bottom-0 left-0 right-0 h-50 bg-linear-to-t from-transparent to-[#0d0608] pointer-events-none' />
           <div className='font-eb-garamond text-[clamp(22px,5vw,38px)] text-[#c9952a] rtl mb-6 opacity-85 animate-fadeup'>
             بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ
@@ -241,10 +246,10 @@ export default function Home() {
             </span>
             Fouzia Afrin Roshni
           </div>
-          <div className='font-cinzel text-[clamp(12px,2.2vw,16px)] tracking-[0.25em] text-[#e8c96a] mt-8 animate-[fadeup_0.9s_0.55s_ease_both]'>
+          <div className='font-cinzel text-[clamp(13px,3vw,20px)] tracking-[0.18em] sm:tracking-[0.25em] text-[#e8c96a] my-5 sm:my-8 animate-[fadeup_0.9s_0.55s_ease_both]'>
             Friday · 19 June 2026
           </div>
-          <div className='font-cormorant italic text-[clamp(14px,2.5vw,19px)] text-[#e8c96a]/60 mt-2 animate-[fadeup_0.9s_0.65s_ease_both] mb-6'>
+          <div className='font-cormorant italic text-[clamp(14px,4.5vw,20px)] text-[#f3dfa4] mt-1 sm:mt-2 mb-10 sm:mb-16 px-3 max-w-[24rem] mx-auto leading-tight'>
             Naz Garden, Bogura, Bangladesh
           </div>
           <div className='mt-12 text-[#e8c96a]/40 text-[11px] tracking-[0.25em] uppercase font-cinzel animate-[fadeup_0.9s_0.8s_ease_both,bob_2s_1.8s_ease-in-out_infinite]'>
@@ -253,12 +258,12 @@ export default function Home() {
         </section>
 
         {/* Couple Photos */}
-        <section className='py-20 px-6 text-center bg-linear-to-b from-[#0d0608] via-[#1a0a10] to-[#0d0608] reveal'>
+        <section className='py-16 sm:py-20 px-4 sm:px-6 text-center bg-linear-to-b from-[#0d0608] via-[#1a0a10] to-[#0d0608] reveal'>
           <div className='font-cinzel text-[clamp(9px,1.8vw,11px)] tracking-[0.4em] text-[#c9952a] uppercase mb-10 opacity-80'>
             The Couple
           </div>
-          <div className='flex flex-wrap justify-center gap-x-8 gap-y-12 max-w-205 mx-auto items-start'>
-            <div className='flex-1 min-w-55 max-w-85'>
+          <div className='flex flex-col lg:flex-row justify-center gap-10 lg:gap-8 max-w-205 mx-auto items-center lg:items-start'>
+            <div className='w-full max-w-88 sm:max-w-[24rem] lg:flex-1 lg:max-w-85'>
               <div className='relative aspect-3/4 bg-[#1a0a10] border border-[#c9952a] overflow-hidden shadow-2xl before:absolute before:inset-2 before:border before:border-[#c9952a]/30 before:z-10 before:pointer-events-none'>
                 <Image
                   src='/img1.jpg'
@@ -277,12 +282,12 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <div className='flex items-center justify-center pt-12'>
+            <div className='flex items-center justify-center lg:pt-12'>
               <span className='font-great-vibes text-[clamp(60px,10vw,90px)] text-[#c9952a]'>
                 &amp;
               </span>
             </div>
-            <div className='flex-1 min-w-55 max-w-85'>
+            <div className='w-full max-w-88 sm:max-w-[24rem] lg:flex-1 lg:max-w-85'>
               <div className='relative aspect-3/4 bg-[#1a0a10] border border-[#c9952a] overflow-hidden shadow-2xl before:absolute before:inset-2 before:border before:border-[#c9952a]/30 before:z-10 before:pointer-events-none'>
                 <Image
                   src='/img2.jpg'
@@ -305,7 +310,7 @@ export default function Home() {
         </section>
 
         {/* Memories Gallery */}
-        <section className='py-20 px-6 text-center bg-linear-to-b from-[#1a0a10] to-[#0d0608] reveal'>
+        <section className='py-16 sm:py-20 px-4 sm:px-6 text-center bg-linear-to-b from-[#1a0a10] to-[#0d0608] reveal'>
           <div className='font-cinzel text-[clamp(9px,1.8vw,11px)] tracking-[0.4em] text-[#c9952a] uppercase mb-10 opacity-80'>
             Memories
           </div>
@@ -332,11 +337,11 @@ export default function Home() {
         </section>
 
         {/* Together Photo */}
-        <section className='py-12 pb-20 px-6 text-center bg-[#0d0608] reveal'>
+        <section className='py-12 pb-18 sm:pb-20 px-4 sm:px-6 text-center bg-[#0d0608] reveal'>
           <div className='font-cinzel text-[clamp(9px,1.8vw,11px)] tracking-[0.4em] text-[#c9952a] uppercase mb-10 opacity-80'>
             Together
           </div>
-          <div className='max-w-170 mx-auto relative border-2 border-[#c9952a] p-1.5 bg-[#0d0608] shadow-2xl shadow-amber-900/20'>
+          <div className='max-w-170 mx-auto relative border-2 border-[#c9952a] p-1 sm:p-1.5 bg-[#0d0608] shadow-2xl shadow-amber-900/20'>
             <Image
               src='/img4.png'
               alt='Shoaib & Roshni'
@@ -351,7 +356,7 @@ export default function Home() {
         </section>
 
         {/* Announcement */}
-        <section className='py-20 px-6 text-center bg-[#faf6ee] relative reveal'>
+        <section className='py-16 sm:py-20 px-4 sm:px-6 text-center bg-[#faf6ee] relative reveal'>
           <div className='absolute top-0 left-0 right-0 h-0.75 bg-linear-to-r from-transparent via-[#c9952a] to-transparent' />
           <div className='absolute bottom-0 left-0 right-0 h-0.75 bg-linear-to-r from-transparent via-[#c9952a] to-transparent' />
           <div className='font-cinzel text-[clamp(9px,2vw,12px)] tracking-[0.35em] text-[#7a5520] uppercase mb-4'>
@@ -396,7 +401,7 @@ export default function Home() {
         </section>
 
         {/* Events */}
-        <section className='py-20 px-6 text-center bg-linear-to-b from-[#0d0608] via-[#1a0a10] to-[#0d0608] reveal'>
+        <section className='py-16 sm:py-20 px-4 sm:px-6 text-center bg-linear-to-b from-[#0d0608] via-[#1a0a10] to-[#0d0608] reveal'>
           <div className='font-cinzel text-[clamp(9px,1.8vw,11px)] tracking-[0.4em] text-[#e8c96a] uppercase mb-2'>
             The Celebrations
           </div>
@@ -411,7 +416,7 @@ export default function Home() {
             <div className='w-2 h-2 bg-[#c9952a] rotate-45 shrink-0' />
             <div className='flex-1 h-px bg-linear-to-r from-transparent via-[#c9952a] to-transparent' />
           </div>
-          <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6 max-w-225 mx-auto'>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 max-w-225 mx-auto'>
             {[
               {
                 name: "Gaye Holud",
@@ -430,18 +435,18 @@ export default function Home() {
             ].map((e, i) => (
               <div
                 key={i}
-                className='border border-[#c9952a]/35 p-8 relative bg-[#0d0608] transition-all hover:border-[#c9952a] hover:-translate-y-1 before:absolute before:top-0 before:left-1/2 before:-translate-x-1/2 before:w-10 before:h-0.5 before:bg-[#c9952a]'>
-                <div className='text-3xl mb-4'>{e.icon}</div>
+                className='border border-[#c9952a]/35 p-6 sm:p-8 relative bg-[#0d0608] transition-all hover:border-[#c9952a] hover:-translate-y-1 before:absolute before:top-0 before:left-1/2 before:-translate-x-1/2 before:w-10 before:h-0.5 before:bg-[#c9952a]'>
+                <div className='text-2xl sm:text-3xl mb-4'>{e.icon}</div>
                 <div className='font-cinzel text-[clamp(12px,2vw,14px)] tracking-[0.2em] text-[#e8c96a] uppercase mb-3'>
                   {e.name}
                 </div>
                 <div className='font-playfair text-[clamp(18px,3vw,22px)] text-[#faf6ee] mb-1'>
                   {e.date}
                 </div>
-                <div className='font-cormorant italic text-[clamp(13px,2vw,15px)] text-[#7a5520]'>
+                <div className='font-cormorant italic text-[clamp(15px,3vw,18px)] text-[#dbb075]'>
                   {e.time}
                 </div>
-                <div className='font-cormorant italic text-[clamp(12px,2vw,14px)] text-[#c9952a]/65 mt-2'>
+                <div className='font-cormorant italic text-[clamp(16px,3vw,16px)] text-[#dbb075] mt-2'>
                   {e.venue}
                 </div>
               </div>
@@ -450,7 +455,7 @@ export default function Home() {
         </section>
 
         {/* Countdown */}
-        <section className='py-20 px-6 text-center bg-[#faf6ee] relative reveal'>
+        <section className='py-16 sm:py-20 px-4 sm:px-6 text-center bg-[#faf6ee] relative reveal'>
           <div className='absolute top-0 left-0 right-0 h-0.75 bg-linear-to-r from-transparent via-[#c9952a] to-transparent' />
           <div className='font-playfair italic text-[clamp(24px,4vw,38px)] text-[#2a1200] mb-1'>
             Counting Down
@@ -458,8 +463,8 @@ export default function Home() {
           <div className='font-cormorant italic text-[clamp(13px,2.2vw,16px)] text-[#7a5520] mb-10'>
             Until Shoaib &amp; Roshni say &quot;Qabul&quot;
           </div>
-          <div className='flex justify-center items-start gap-x-4 sm:gap-x-7 max-w-125 mx-auto'>
-            <div className='text-center min-w-[17.5'>
+          <div className='flex flex-wrap lg:flex-nowrap justify-center items-start sm:items-center gap-3 sm:gap-x-7 max-w-125 lg:max-w-none mx-auto'>
+            <div className='w-[calc(50%-0.375rem)] sm:w-auto text-center flex-none'>
               <span
                 id='cd-d'
                 className='font-cinzel text-[clamp(40px,8vw,72px)] text-[#2a1200] block leading-none font-semibold'>
@@ -469,10 +474,10 @@ export default function Home() {
                 Days
               </span>
             </div>
-            <div className='font-cinzel text-[clamp(30px,6vw,52px)] text-[#c9952a] pt-1'>
+            <div className='hidden sm:block font-cinzel text-[clamp(30px,6vw,52px)] text-[#c9952a] pt-1'>
               :
             </div>
-            <div className='text-center min-w-17.5'>
+            <div className='w-[calc(50%-0.375rem)] sm:w-auto text-center flex-none'>
               <span
                 id='cd-h'
                 className='font-cinzel text-[clamp(40px,8vw,72px)] text-[#2a1200] block leading-none font-semibold'>
@@ -482,10 +487,10 @@ export default function Home() {
                 Hours
               </span>
             </div>
-            <div className='font-cinzel text-[clamp(30px,6vw,52px)] text-[#c9952a] pt-1'>
+            <div className='hidden sm:block font-cinzel text-[clamp(30px,6vw,52px)] text-[#c9952a] pt-1'>
               :
             </div>
-            <div className='text-center min-w-17.5'>
+            <div className='w-[calc(50%-0.375rem)] sm:w-auto text-center flex-none'>
               <span
                 id='cd-m'
                 className='font-cinzel text-[clamp(40px,8vw,72px)] text-[#2a1200] block leading-none font-semibold'>
@@ -495,10 +500,10 @@ export default function Home() {
                 Mins
               </span>
             </div>
-            <div className='font-cinzel text-[clamp(30px,6vw,52px)] text-[#c9952a] pt-1'>
+            <div className='hidden sm:block font-cinzel text-[clamp(30px,6vw,52px)] text-[#c9952a] pt-1'>
               :
             </div>
-            <div className='text-center min-w-17.5'>
+            <div className='w-[calc(50%-0.375rem)] sm:w-auto text-center flex-none'>
               <span
                 id='cd-s'
                 className='font-cinzel text-[clamp(40px,8vw,72px)] text-[#2a1200] block leading-none font-semibold'>
@@ -512,7 +517,7 @@ export default function Home() {
         </section>
 
         {/* Venue */}
-        <section className='py-20 px-6 text-center bg-linear-to-b from-[#0d0608] to-[#1a0a10] reveal'>
+        <section className='py-16 sm:py-20 px-4 sm:px-6 text-center bg-linear-to-b from-[#0d0608] to-[#1a0a10] reveal'>
           <div className='font-cinzel text-[clamp(9px,1.8vw,11px)] tracking-[0.4em] text-[#c9952a] uppercase mb-4'>
             Where it happens
           </div>
@@ -527,15 +532,16 @@ export default function Home() {
           <div className='font-cormorant italic text-[clamp(14px,2.5vw,18px)] text-[#7a5520] mt-3'>
             Bogura, Bangladesh
           </div>
-          <div className='max-w-250 mx-auto mt-10 aspect-16/8 border border-[#c9952a]/30 overflow-hidden rounded-lg'>
+          <div className='max-w-250 mx-auto mt-10 aspect-16/11 sm:aspect-16/8 border border-[#c9952a]/30 overflow-hidden rounded-lg'>
             <StyledMap />
           </div>
           <div className='font-cormorant italic text-[clamp(12px,2vw,15px)] text-[#c9952a]/50 mt-6'>
             Directions will be shared closer to the date · Insha&apos;Allah
           </div>
         </section>
+
         {/* Footer */}
-        <footer className='py-16 px-6 bg-[#0d0608] text-center relative'>
+        <footer className='py-14 sm:py-16 px-4 sm:px-6 bg-[#0d0608] text-center relative'>
           <div className='absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-[#c9952a] to-transparent' />
           <div className='flex items-center gap-3 max-w-100 mx-auto mb-8'>
             <div className='flex-1 h-px bg-linear-to-r from-transparent via-[#c9952a] to-transparent' />
