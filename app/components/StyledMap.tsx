@@ -40,6 +40,7 @@ const StyledMap = () => {
       const script = document.createElement("script");
       script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=marker`;
       script.async = true;
+      script.setAttribute("loading", "async");
       script.onerror = () => {
         console.error("Failed to load Google Maps API");
         // Fallback to embedded map
@@ -169,7 +170,7 @@ const StyledMap = () => {
   return (
     <div
       ref={mapRef}
-      className='w-full h-full rounded-lg cursor-pointer hover:opacity-90 transition-opacity'
+      className='w-full h-full min-h-55 sm:min-h-80 lg:min-h-105 rounded-lg cursor-pointer touch-manipulation hover:opacity-90 transition-opacity'
       onClick={() => {
         window.open(
           "https://maps.app.goo.gl/bXseqyVyUQ8Y239j7?g_st=ic",
