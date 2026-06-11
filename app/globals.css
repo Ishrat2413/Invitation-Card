@@ -3,11 +3,16 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --cream: #faf6ee;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --font-cinzel: var(--font-cinzel-font), serif;
+  --font-playfair: var(--font-playfair-display), serif;
+  --font-cormorant: var(--font-cormorant-garamond), serif;
+  --font-ebGaramond: var(--font-eb-garamond), serif;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -22,5 +27,37 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Cormorant Garamond", serif;
+}
+
+/* Custom keyframes that Tailwind doesn't cover are already in config, but keep petals positioning */
+.petal {
+  position: fixed;
+  top: -40px;
+  pointer-events: none;
+  z-index: 1;
+  animation: fallpetal linear infinite;
+  font-size: 16px;
+  opacity: 0.75;
+}
+
+/* Reveal animation (not easily done with Tailwind) */
+.reveal {
+  opacity: 0;
+  transform: translateY(36px);
+  transition:
+    opacity 0.8s ease,
+    transform 0.8s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Additional styling for envelope 3D effect */
+.env-flap {
+  transform-style: preserve-3d;
+}
+.font-great-vibes {
+  font-family: var(--font-great-vibes), cursive;
 }
